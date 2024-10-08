@@ -164,7 +164,7 @@ One key aspect that might not be immediately clear is how we pass the result (th
 To understand the concept let's switch gears and look at how we can reproduce our assembly program in C. In C, every program must have an entry point, which is typically the main() function. However, when working with lower-level operations like system calls, we can specify different entry points by utilizing function attributes or linker scripts, but for now, we’ll keep it simple.
 
 <span class="preformatted">
-    #include <unistd.h>
+    #include &tl;unistd.h&gt;
 
         int main() {
             _exit(0); // Call _exit to terminate the program with status 0
