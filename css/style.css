@@ -1,0 +1,56 @@
+body {
+  color: #FEFEFE;
+  background-color: #0A0B11;
+  margin: 0 auto;
+  padding: 1em 0 1em 0;
+}
+a { 
+  color: #93ffd7;
+  text-decoration: none; 
+}
+@font-face { 
+  font-family: "unifont"; 
+  src: url("./unifont.woff") format('woff'); 
+}
+pre { 
+  font-family: "unifont", "Lucida Console", monospace, Monaco; 
+  font-size:16px; 
+  line-height: 1.0;
+  padding-left: 20px;
+}
+
+p { 
+  font-family: "unifont", "Lucida Console", monospace, Monaco; 
+  white-space: pre-wrap; 
+  word-wrap: break-word;  
+  padding: 1em;
+  margin: 1em 0;
+  border-left: 3px solid #333;  
+  overflow-x: auto;  
+  max-width: 100%;  
+  box-sizing: border-box;
+}
+
+ul {
+  margin: 10px 0; 
+  font-family: "unifont", "Lucida Console", monospace, Monaco;
+}
+
+.preformatted {
+  display: inline-block; 
+  padding: 5px; 
+  font-family: monospace; 
+  white-space: pre;
+        }
+
+hr {
+  border: none; 
+  height: 2px;
+  background-color: #ccc; 
+  margin: 20px 0; 
+}
+
+.txtdiv {
+  display: block;
+  text-align: left;
+}

